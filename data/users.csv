@@ -1,0 +1,4 @@
+username,password,role,filter_name
+admin,password,admin,
+sales1,password,sales,Sales Executive 1
+sales2,password,sales,Sales Executive 2
