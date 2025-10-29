@@ -3,20 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Sales Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #0052cc;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--background-color);
+        }
+        .login-container {
+            padding: 2em;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    <form action="/login" method="post">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-    </form>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>
