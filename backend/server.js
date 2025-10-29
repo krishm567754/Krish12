@@ -1,7 +1,5 @@
 const express = require('express');
 const session = require('express-session');
-const csv = require('csv-parser');
-const fs = require('fs');
 const path = require('path');
 const dataHandler = require('./data-handler');
 const crypto = require('crypto');
@@ -19,9 +17,17 @@ app.use(session({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
+    // For simplicity, user authentication remains with users.csv.
+    // In a real-world scenario, this should also be more robust.
     const users = [];
+    const fs = require('fs');
+    const csv = require('csv-parser');
     fs.createReadStream(path.join(__dirname, '../data/users.csv'))
         .pipe(csv())
         .on('data', (data) => users.push(data))
