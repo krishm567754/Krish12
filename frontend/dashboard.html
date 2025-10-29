@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 1em;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .page {
+            background: #fff;
+            padding: 1em;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 0.5em;
+            }
+            .modal-content {
+                width: 95%;
+                margin: 20% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Sales Dashboard</h1>
+
+    <!-- Page 1: Open Sales Orders -->
+    <div class="page">
+        <h2>Open Sales Orders (Last 3 Days)</h2>
+        <table id="sales-orders-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Total Order Quantity</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Page 2: Billing Details -->
+    <div class="page">
+        <h2>Billing Details (Last 7 Days)</h2>
+        <table id="billing-details-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Invoice No</th>
+                    <th>Invoice Date</th>
+                    <th>Product Volume</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Page 3: Quarterly Invoice Search -->
+    <div class="page">
+        <h2>Quarterly Invoice Search</h2>
+        <form id="invoice-search-form">
+            <input type="text" id="invoice-no" placeholder="Enter Invoice No." required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="invoice-search-results"></div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modal-title"></h3>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display sales orders
+        fetch('/api/sales-orders')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#sales-orders-table tbody');
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td><a href="#" class="customer-link">${item.customerName}</a></td><td>${item.orderQty}</td>`;
+                    row.querySelector('.customer-link').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showModal('Sales Order Details for ' + item.customerName, item.products);
+                    });
+                    tableBody.appendChild(row);
+                });
+            });
+
+        // Fetch and display billing details
+        fetch('/api/billing-details')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#billing-details-table tbody');
+                data.forEach(customer => {
+                    customer.invoices.forEach(invoice => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><a href="#" class="customer-link">${customer.customerName}</a></td>
+                            <td>${invoice.invoiceNo}</td>
+                            <td>${invoice.invoiceDate}</td>
+                            <td>${invoice.productVolume}</td>
+                        `;
+                        row.querySelector('.customer-link').addEventListener('click', (e) => {
+                            e.preventDefault();
+                            showModal('Billing Details for ' + customer.customerName, invoice.products);
+                        });
+                        tableBody.appendChild(row);
+                    });
+                });
+            });
+
+        // Invoice search functionality
+        document.getElementById('invoice-search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const invoiceNo = document.getElementById('invoice-no').value;
+            fetch(`/api/invoice-search?invoiceNo=${invoiceNo}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('invoice-search-results');
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = '<p>No results found.</p>';
+                        return;
+                    }
+                    const result = data[0];
+                    resultsDiv.innerHTML = `
+                        <p>
+                            <a href="#" id="search-result-link">
+                                Customer: ${result.customerName},
+                                Invoice: ${result.invoiceNo},
+                                Date: ${result.invoiceDate},
+                                Volume: ${result.totalProductVolume}
+                            </a>
+                        </p>`;
+                    document.getElementById('search-result-link').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showModal('Invoice Details for ' + result.invoiceNo, result.products);
+                    });
+                });
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('details-modal');
+        const span = document.getElementsByClassName("close")[0];
+        span.onclick = () => modal.style.display = "none";
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function showModal(title, details) {
+            document.getElementById('modal-title').innerText = title;
+            const modalBody = document.getElementById('modal-body');
+            let listItems = details.map(p => {
+                const name = p.productDescription || p.productName || 'N/A';
+                const value = p.orderQty || p.productVolume || 'N/A';
+                return `<li>${name}: ${value}</li>`;
+            }).join('');
+            modalBody.innerHTML = `<ul>${listItems}</ul>`;
+            modal.style.display = "block";
+        }
+    </script>
+</body>
+</html>
